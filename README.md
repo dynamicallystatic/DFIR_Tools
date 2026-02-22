@@ -2,7 +2,7 @@
 
 A collection of Digital Forensics & Incident Response (DFIR) tools and scripts for evidence acquisition, analysis, and reporting.
 
-Maintained by [@dynamicallystatic](https://github.com/dynamicallystatic)
+Maintained by [Bryan Ambrose](https://github.com/dynamicallystatic)
 
 ---
 
