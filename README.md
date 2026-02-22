@@ -14,7 +14,7 @@ LinkedIn: [Bryan Ambrose](https://www.linkedin.com/in/bryan-a-2a30ab140)
 |---|------|----------|--------------|
 | 1 | [dfir_sqlite_dumper.py](#dfir_sqlite_dumperpy) | SQLite Forensics | Extract all SQLite tables to CSV with forensic metadata |
 | 2 | [dfir_linux_collector.sh](#dfir_linux_collectorsh) | Linux Forensics | Collect forensic artifacts from a live Linux system |
-| 3 | [dfir_windows_registry_reporter.py](#dfir_windows_registry_reporterpy) | Windows Forensics | Comprehensive Windows registry forensic triage tool |
+| 3 | [dfir_windows_registry_reporter.exe](#dfir_windows_registry_reporterexe) | Windows Forensics | Comprehensive Windows registry forensic triage tool |
 
 ---
 
@@ -90,11 +90,11 @@ sudo bash dfir_linux_collector.sh --full -o /mnt/external/case001
 
 ---
 
-### [dfir_windows_registry_reporter.py](https://github.com/dynamicallystatic/DFIR_Tools/blob/main/dfir_windows_registry_reporter.py)
+### [dfir_windows_registry_reporter.exe](https://github.com/dynamicallystatic/DFIR_Tools/blob/main/dfir_windows_registry_reporter.exe)
 
 **Category:** Windows Forensics
 
-A Python script for comprehensive Windows registry forensic triage. Parses 21 artifact categories directly from the live registry (no admin required for most) or from offline hive files copied from a suspect machine.
+Standalone Windows executable for comprehensive registry forensic triage. No Python or dependencies required — download and run. Parses 21 artifact categories from the live registry or offline hive files copied from a suspect machine.
 
 **Artifact Categories:**
 
@@ -114,18 +114,18 @@ A Python script for comprehensive Windows registry forensic triage. Parses 21 ar
 - Captures network history with **first seen / last connected** timestamps
 - Enumerates every USB storage device ever connected
 
-**Requirements:** Python 3.x, Windows, `pip install python-registry`
+**Requirements:** Windows only — no install needed, just run the exe
 
 **Usage:**
-```bash
-# Live registry (no admin needed for most artifacts)
-python dfir_windows_registry_reporter.py
+```cmd
+:: Live registry (no admin needed for most artifacts)
+dfir_windows_registry_reporter.exe
 
-# Offline hive files from a suspect machine
-python dfir_windows_registry_reporter.py --hive-dir C:\path\to\hives\
+:: Offline hive files from a suspect machine
+dfir_windows_registry_reporter.exe --hive-dir C:\path\to\hives\
 
-# Custom output directory
-python dfir_windows_registry_reporter.py -o C:\Cases\Case001\registry\
+:: Custom output directory
+dfir_windows_registry_reporter.exe -o C:\Cases\Case001\registry\
 ```
 
 ---
