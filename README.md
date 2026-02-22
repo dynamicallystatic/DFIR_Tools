@@ -107,7 +107,7 @@ Standalone Windows executable for exported csv reports of registry artifacts.
 
 **Features:**
 - Supports **offline hive files** with `--hive-dir` command
-- Each artifact exported to a **CSV file** for easy review
+- Each artifact exported to a **CSV file**
 - Master `_FULL_REPORT_*.csv` combining all artifacts into one file
 - Captures network history with **first seen / last connected** timestamps
 - Enumerates USB storage devices
