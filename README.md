@@ -94,7 +94,7 @@ sudo bash dfir_linux_collector.sh --full -o /mnt/external/case001
 
 **Category:** Windows Forensics
 
-Standalone Windows executable for comprehensive registry forensic triage. No Python or dependencies required — download and run. Parses 21 artifact categories from the live registry or offline hive files copied from a suspect machine.
+Standalone Windows executable for registry forensic triage.
 
 **Artifact Categories:**
 
