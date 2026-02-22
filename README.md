@@ -47,7 +47,7 @@ python3 dfir_sqlite_dumper.py History
 
 **Category:** Linux Forensics
 
-A bash script for collecting forensic evidence from a live Linux system. Offers three collection modes to suit different field situations — from a rapid triage to a full filesystem copy.
+A bash script for collecting forensic evidence from a live Linux system. Offers three collection modes: triage, home, and full.
 
 **Modes:**
 
@@ -58,14 +58,13 @@ A bash script for collecting forensic evidence from a live Linux system. Offers 
 | Full | `--full` | Everything in home + full copy of the root filesystem, compressed to `.tar.gz` |
 
 **Features:**
-- Three collection modes for different field scenarios
 - Captures live system state: running processes, active connections, logged-in users
 - Full filesystem copy of home directories or root with `rsync` (falls back to `tar` if unavailable)
 - Enumerates persistence mechanisms: crontabs, systemd services, startup scripts, SSH keys
 - Gathers logs: auth.log, syslog, wtmp, btmp, journalctl output
 - Generates a `_dfir_collection_report.txt` with a full **SHA256 hash manifest**
 - MD5 & SHA256 hash sidecar files for every `.tar.gz` archive produced
-- **No dependencies beyond bash** — works on any Linux system
+- **No dependencies beyond bash** — works on most Linux systems
 
 **Requirements:** Bash, run as root (`sudo`)
 
