@@ -106,13 +106,11 @@ Standalone Windows executable for comprehensive registry forensic triage. No Pyt
 | **SAM** | Local User Accounts (requires Administrator) |
 
 **Features:**
-- Parses **21 artifact types** from the live registry — no admin required for most
-- Supports **offline hive files** from a suspect machine via `--hive-dir`
-- Each artifact exported to its own **CSV file** for easy review
+- Supports **offline hive files** with `--hive-dir` command
+- Each artifact exported to a **CSV file** for easy review
 - Master `_FULL_REPORT_*.csv` combining all artifacts into one file
-- ROT13 decodes UserAssist entries automatically
 - Captures network history with **first seen / last connected** timestamps
-- Enumerates every USB storage device ever connected
+- Enumerates USB storage devices
 
 **Requirements:** Windows only — no install needed, just run the exe
 
