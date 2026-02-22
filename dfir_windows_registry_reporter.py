@@ -98,10 +98,86 @@ def rot13(s: str) -> str:
     return codecs.encode(s, "rot_13")
 
 
-def row(artifact: str, source: str, name: str, value: str,
+def clean_str(value) -> str:
+    """Strip null bytes, non-printable chars, and normalise whitespace."""
+    if isinstance(value, bytes):
+        for enc in ("utf-16-le", "utf-8", "latin-1"):
+            try:
+                value = value.decode(enc, errors="ignore")
+                break
+            except Exception:
+                continue
+    s = str(value)
+    s = "".join(c for c in s if c.isprintable())
+    return " ".join(s.split())[:500]
+
+
+def extract_pidl_string(data: bytes) -> str:
+    """
+    Extract a human-readable name from a Shell Item List (PIDL) binary blob.
+
+    RecentDocs stores values as: [UTF-16LE filename + null-terminator] + [PIDL bytes]
+    OpenSavePidlMRU / LastVisitedPidlMRU store raw PIDLs.
+    We try the leading null-terminated string first, then fall back to scanning
+    for the longest embedded UTF-16LE printable run (>= 4 chars).
+    """
+    if not isinstance(data, bytes) or not data:
+        return clean_str(data)
+
+    # --- Strategy 1: leading null-terminated UTF-16LE string (RecentDocs) ---
+    try:
+        text = data.decode("utf-16-le", errors="ignore")
+        idx  = text.find("\x00")
+        if idx > 1:
+            candidate = text[:idx].strip()
+            if len(candidate) >= 2 and all(c.isprintable() for c in candidate):
+                return candidate
+    except Exception:
+        pass
+
+    # --- Strategy 2: scan for longest embedded UTF-16LE printable string ---
+    # Try from BOTH byte offsets (0 and 1) so we never sync to an odd boundary.
+    def _scan_offset(blob: bytes, start: int) -> str:
+        best_run = ""
+        i = start
+        while i < len(blob) - 1:
+            try:
+                ch = blob[i:i+2].decode("utf-16-le")
+            except Exception:
+                i += 2
+                continue
+            if ch.isprintable() and ch != "\x00":
+                run = ch
+                j = i + 2
+                while j < len(blob) - 1:
+                    try:
+                        nc = blob[j:j+2].decode("utf-16-le")
+                    except Exception:
+                        break
+                    if nc.isprintable() and nc != "\x00":
+                        run += nc
+                        j   += 2
+                    else:
+                        break
+                if len(run) >= 4 and len(run) > len(best_run):
+                    best_run = run.strip()
+                i = j + 2
+            else:
+                i += 2
+        return best_run
+
+    candidate_even = _scan_offset(data, 0)
+    candidate_odd  = _scan_offset(data, 1)
+    best = candidate_even if len(candidate_even) >= len(candidate_odd) else candidate_odd
+    return best[:500] if best else ""
+
+
+def row(artifact: str, source: str, name: str, value,
         timestamp: str = "N/A", notes: str = "") -> dict:
-    return {"Artifact": artifact, "Source": source, "Name": name,
-            "Value": str(value)[:500], "Timestamp": timestamp, "Notes": notes}
+    return {"Artifact": artifact, "Source": source,
+            "Name":     clean_str(name),
+            "Value":    clean_str(value),
+            "Timestamp": timestamp, "Notes": clean_str(notes)}
 
 
 def enum_values(key) -> list[tuple]:
@@ -171,28 +247,24 @@ def collect_recent_docs() -> list[dict]:
     rd_key = open_key_safe(winreg.HKEY_CURRENT_USER, rd_path)
     if not rd_key:
         return [row("RecentDocs", rd_path, "ERROR", "Key not found")]
-    # Root MRUListEx
+    # Root-level values
     for name, value, _ in enum_values(rd_key):
-        if name.startswith("MRU") or name == "":
+        if name.upper().startswith("MRU") or name == "":
             continue
-        try:
-            text = value.decode("utf-16-le").rstrip("\x00")
+        text = extract_pidl_string(value) if isinstance(value, bytes) else clean_str(value)
+        if text:
             results.append(row("RecentDocs", f"HKCU\\{rd_path}", name, text))
-        except Exception:
-            results.append(row("RecentDocs", f"HKCU\\{rd_path}", name, repr(value)))
-    # Sub-keys (per-extension)
+    # Sub-keys grouped by extension (e.g. .docx, .pdf)
     for ext in enum_subkeys(rd_key):
         sub = open_key_safe(rd_key, ext)
         if not sub:
             continue
         for name, value, _ in enum_values(sub):
-            if name.startswith("MRU"):
+            if name.upper().startswith("MRU"):
                 continue
-            try:
-                text = value.decode("utf-16-le").rstrip("\x00")
+            text = extract_pidl_string(value) if isinstance(value, bytes) else clean_str(value)
+            if text:
                 results.append(row("RecentDocs", f"HKCU\\{rd_path}\\{ext}", name, text))
-            except Exception:
-                results.append(row("RecentDocs", f"HKCU\\{rd_path}\\{ext}", name, repr(value)))
         winreg.CloseKey(sub)
     winreg.CloseKey(rd_key)
     return results
@@ -223,13 +295,9 @@ def collect_opensave_mru() -> list[dict]:
         for name, value, _ in enum_values(sub):
             if name.upper().startswith("MRU"):
                 continue
-            try:
-                # Shell item list — extract display name (rough decode)
-                text = value.decode("utf-16-le", errors="replace").rstrip("\x00")
-                text = "".join(c for c in text if c.isprintable())
-            except Exception:
-                text = repr(value)
-            results.append(row("OpenSaveMRU", f"HKCU\\{base}\\{ext}", name, text))
+            text = extract_pidl_string(value) if isinstance(value, bytes) else clean_str(value)
+            if text:
+                results.append(row("OpenSaveMRU", f"HKCU\\{base}\\{ext}", name, text))
         winreg.CloseKey(sub)
     winreg.CloseKey(key)
     return results
@@ -244,12 +312,9 @@ def collect_lastvisited_mru() -> list[dict]:
     for name, value, _ in enum_values(key):
         if name.upper().startswith("MRU"):
             continue
-        try:
-            text = value.decode("utf-16-le", errors="replace").rstrip("\x00")
-            text = "".join(c for c in text if c.isprintable())
-        except Exception:
-            text = repr(value)
-        results.append(row("LastVisitedMRU", f"HKCU\\{base}", name, text))
+        text = extract_pidl_string(value) if isinstance(value, bytes) else clean_str(value)
+        if text:
+            results.append(row("LastVisitedMRU", f"HKCU\\{base}", name, text))
     winreg.CloseKey(key)
     return results
 
