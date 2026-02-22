@@ -94,7 +94,7 @@ sudo bash dfir_linux_collector.sh --full -o /mnt/external/case001
 
 **Category:** Windows Forensics
 
-Standalone Windows executable for registry forensic triage.
+Standalone Windows executable for exported csv reports of registry artifacts.
 
 **Artifact Categories:**
 
