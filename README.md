@@ -133,9 +133,7 @@ dfir_windows_registry_reporter.exe -o C:\Cases\Case001\registry\
 
 **Category:** File Carving
 
-Standalone Windows executable for exported csv reports of registry artifacts.
-
-Cross-platform Python file carving and indexing tool. Carves forensic artifacts from disk images, directories, or the live filesystem using a configurable YAML signature file with ~55 built-in file types.
+Cross-platform Python file carving and indexing tool. Carves forensic artifacts from disk images, directories, or the live filesystem using a configurable YAML signature file with built-in file types.
 
 **Artifact Categories:**
 
@@ -150,18 +148,16 @@ Cross-platform Python file carving and indexing tool. Carves forensic artifacts 
 | **Media** | mp4/mov, avi, mpg, wmv, mkv, mp3, wav, flac |
 | **Email** | pst, mbox, emlx |
 | **Network** | pcap, pcapng |
-| **Mobile** | WhatsApp crypt12/15 |
-| **Crypto** | PGP keys, X.509 certificates |
 
 **Features:**
-- Carves **~55 file types** using configurable byte signatures
+- Carves **file types** using configurable byte signatures
 - Three input modes: **disk image** (.dd/.raw/.e01), **directory**, **live filesystem**
 - Multi-threaded scanning with progress bar
 - Optional **file validation** pass (verifies carved files actually open)
 - **SQLite index** (`index.db`) — file, type, offset, size, MD5, SHA256
 - **CSV report** (`report.csv`) for spreadsheet review
-- Carved files organised into subfolders by category
-- User-friendly `signatures.yaml` — enable/disable types, set max sizes, add custom signatures
+- Carved files organized into subfolders by category
+- `signatures.yaml` — enable/disable types, set max sizes, add custom signatures
 
 **Requirements:** Python 3.10+, cross-platform — `pip install pyyaml tqdm pillow`
 
