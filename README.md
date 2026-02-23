@@ -15,6 +15,7 @@ LinkedIn: [Bryan Ambrose](https://www.linkedin.com/in/bryan-a-2a30ab140)
 | 1 | [dfir_sqlite_dumper.py](#dfir_sqlite_dumperpy) | SQLite Forensics | Extract all SQLite tables to CSV with forensic metadata |
 | 2 | [dfir_linux_collector.sh](#dfir_linux_collectorsh) | Linux Forensics | Collect forensic artifacts from a live Linux system |
 | 3 | [dfir_windows_registry_reporter.exe](#dfir_windows_registry_reporterexe) | Windows Forensics | Comprehensive Windows registry forensic triage tool |
+| 4 | [dfir_artifact_carver/](#dfir_artifact_carver) | File Carving | Cross-platform file carver with SQLite index and CSV report |
 
 ---
 
@@ -124,6 +125,59 @@ dfir_windows_registry_reporter.exe --hive-dir C:\path\to\hives\
 
 :: Custom output directory
 dfir_windows_registry_reporter.exe -o C:\Cases\Case001\registry\
+```
+
+---
+
+### [dfir_artifact_carver/](https://github.com/dynamicallystatic/DFIR_Tools/tree/main/dfir_artifact_carver)
+
+**Category:** File Carving
+
+Standalone Windows executable for exported csv reports of registry artifacts.
+
+Cross-platform Python file carving and indexing tool. Carves forensic artifacts from disk images, directories, or the live filesystem using a configurable YAML signature file with ~55 built-in file types.
+
+**Artifact Categories:**
+
+| Category | File Types |
+|----------|------------|
+| **Images** | jpg, png, gif, bmp, heic, webp, cr2, tiff |
+| **Documents** | pdf, docx/xlsx/pptx, doc, rtf |
+| **Databases** | sqlite, mdb |
+| **Windows Artifacts** | prefetch (.pf), LNK, EVTX, registry hives |
+| **Archives** | zip, 7z, rar, gz, iso |
+| **Executables** | PE (exe/dll), ELF, Mach-O, Java class |
+| **Media** | mp4/mov, avi, mpg, wmv, mkv, mp3, wav, flac |
+| **Email** | pst, mbox, emlx |
+| **Network** | pcap, pcapng |
+| **Mobile** | WhatsApp crypt12/15 |
+| **Crypto** | PGP keys, X.509 certificates |
+
+**Features:**
+- Carves **~55 file types** using configurable byte signatures
+- Three input modes: **disk image** (.dd/.raw/.e01), **directory**, **live filesystem**
+- Multi-threaded scanning with progress bar
+- Optional **file validation** pass (verifies carved files actually open)
+- **SQLite index** (`index.db`) — file, type, offset, size, MD5, SHA256
+- **CSV report** (`report.csv`) for spreadsheet review
+- Carved files organised into subfolders by category
+- User-friendly `signatures.yaml` — enable/disable types, set max sizes, add custom signatures
+
+**Requirements:** Python 3.10+, cross-platform — `pip install pyyaml tqdm pillow`
+
+**Usage:**
+```bash
+# Carve a disk image
+python dfir_artifact_carver.py --image disk.dd --output carved/
+
+# Scan a directory recursively
+python dfir_artifact_carver.py --dir /path/to/dir --output carved/
+
+# Live filesystem scan
+python dfir_artifact_carver.py --live --root C:\ --output carved/
+
+# Custom signatures + more threads
+python dfir_artifact_carver.py --image disk.dd --config my_sigs.yaml --threads 8
 ```
 
 ---

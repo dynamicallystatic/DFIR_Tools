@@ -1,0 +1,472 @@
+# =============================================================================
+# dfir_artifact_carver — Signatures Configuration
+# =============================================================================
+#
+# Each entry defines one file type to carve. Fields:
+#
+#   name         : Human-readable name shown in reports
+#   category     : Grouping (used for output subfolder and filtering)
+#   extension    : File extension for carved output
+#   header       : Hex bytes at start of file (space-separated, e.g. "FF D8 FF")
+#   footer       : (optional) Hex bytes marking end of file
+#   header_offset: (optional) Byte offset where header appears (default: 0)
+#   max_size_mb  : Max carved file size in MB (prevents runaway carves)
+#   min_size_kb  : Minimum size to keep in KB (default: 1)
+#   validate     : Run format validation after carving (true/false)
+#   enabled      : Set to false to skip this signature without deleting it
+#
+# Tips:
+#   - Use ?? as a wildcard byte in header/footer (e.g. "FF D8 FF ?? E0")
+#   - Shorter headers = more false positives; longer = more missed hits
+#   - max_size_mb is critical for footerless formats – set conservatively
+# =============================================================================
+
+signatures:
+
+  # ---------------------------------------------------------------------------
+  # IMAGES
+  # ---------------------------------------------------------------------------
+  - name: JPEG Image
+    category: Images
+    extension: jpg
+    header: "FF D8 FF"
+    footer: "FF D9"
+    max_size_mb: 50
+    validate: true
+    enabled: true
+
+  - name: PNG Image
+    category: Images
+    extension: png
+    header: "89 50 4E 47 0D 0A 1A 0A"
+    footer: "49 45 4E 44 AE 42 60 82"
+    max_size_mb: 100
+    validate: true
+    enabled: true
+
+  - name: GIF Image
+    category: Images
+    extension: gif
+    header: "47 49 46 38"
+    footer: "00 3B"
+    max_size_mb: 20
+    validate: true
+    enabled: true
+
+  - name: BMP Image
+    category: Images
+    extension: bmp
+    header: "42 4D"
+    max_size_mb: 50
+    validate: false
+    enabled: true
+
+  - name: HEIC Image (iPhone)
+    category: Images
+    extension: heic
+    header: "00 00 00 ?? 66 74 79 70 68 65 69 63"
+    header_offset: 0
+    max_size_mb: 50
+    validate: false
+    enabled: true
+
+  - name: WebP Image
+    category: Images
+    extension: webp
+    header: "52 49 46 46"
+    max_size_mb: 50
+    validate: false
+    enabled: true
+
+  - name: Canon RAW (CR2)
+    category: Images
+    extension: cr2
+    header: "49 49 2A 00 10 00 00 00 43 52"
+    max_size_mb: 100
+    validate: false
+    enabled: true
+
+  - name: TIFF Image
+    category: Images
+    extension: tiff
+    header: "49 49 2A 00"
+    max_size_mb: 100
+    validate: false
+    enabled: true
+
+  # ---------------------------------------------------------------------------
+  # DOCUMENTS
+  # ---------------------------------------------------------------------------
+  - name: PDF Document
+    category: Documents
+    extension: pdf
+    header: "25 50 44 46 2D"
+    footer: "25 25 45 4F 46"
+    max_size_mb: 200
+    validate: false
+    enabled: true
+
+  - name: Office Open XML (docx/xlsx/pptx)
+    category: Documents
+    extension: docx
+    header: "50 4B 03 04 14 00 06 00"
+    max_size_mb: 100
+    validate: false
+    enabled: true
+
+  - name: Legacy MS Word (doc)
+    category: Documents
+    extension: doc
+    header: "D0 CF 11 E0 A1 B1 1A E1"
+    max_size_mb: 100
+    validate: false
+    enabled: true
+
+  - name: ODF Document (odt/ods/odp)
+    category: Documents
+    extension: odt
+    header: "50 4B 03 04"
+    max_size_mb: 50
+    validate: false
+    enabled: false   # disabled — same header as zip/office; enable if needed
+
+  - name: RTF Document
+    category: Documents
+    extension: rtf
+    header: "7B 5C 72 74 66 31"
+    max_size_mb: 50
+    validate: false
+    enabled: true
+
+  # ---------------------------------------------------------------------------
+  # DATABASES
+  # ---------------------------------------------------------------------------
+  - name: SQLite Database
+    category: Databases
+    extension: sqlite
+    header: "53 51 4C 69 74 65 20 66 6F 72 6D 61 74 20 33 00"
+    max_size_mb: 2000
+    validate: true
+    enabled: true
+
+  - name: Microsoft Access Database (mdb)
+    category: Databases
+    extension: mdb
+    header: "00 01 00 00 53 74 61 6E 64 61 72 64 20 4A 65 74"
+    max_size_mb: 500
+    validate: false
+    enabled: true
+
+  # ---------------------------------------------------------------------------
+  # WINDOWS ARTIFACTS
+  # ---------------------------------------------------------------------------
+  - name: Windows Prefetch
+    category: Windows Artifacts
+    extension: pf
+    header: "53 43 43 41"
+    max_size_mb: 1
+    validate: false
+    enabled: true
+
+  - name: Windows LNK Shortcut
+    category: Windows Artifacts
+    extension: lnk
+    header: "4C 00 00 00 01 14 02 00 00 00 00 00 C0 00 00 00 00 00 00 46"
+    max_size_mb: 1
+    validate: false
+    enabled: true
+
+  - name: Windows Event Log (EVTX)
+    category: Windows Artifacts
+    extension: evtx
+    header: "45 6C 66 46 69 6C 65"
+    max_size_mb: 500
+    validate: false
+    enabled: true
+
+  - name: Windows Registry Hive
+    category: Windows Artifacts
+    extension: hive
+    header: "72 65 67 66"
+    max_size_mb: 500
+    validate: false
+    enabled: true
+
+  - name: Windows Memory Dump (hiberfil)
+    category: Windows Artifacts
+    extension: bin
+    header: "50 41 47 45 44 55 4D 50"
+    max_size_mb: 32000
+    validate: false
+    enabled: false   # disabled by default — very large
+
+  # ---------------------------------------------------------------------------
+  # ARCHIVES & CONTAINERS
+  # ---------------------------------------------------------------------------
+  - name: ZIP Archive
+    category: Archives
+    extension: zip
+    header: "50 4B 03 04"
+    footer: "50 4B 05 06"
+    max_size_mb: 2000
+    validate: false
+    enabled: true
+
+  - name: 7-Zip Archive
+    category: Archives
+    extension: 7z
+    header: "37 7A BC AF 27 1C"
+    max_size_mb: 2000
+    validate: false
+    enabled: true
+
+  - name: RAR Archive (v4)
+    category: Archives
+    extension: rar
+    header: "52 61 72 21 1A 07 00"
+    max_size_mb: 2000
+    validate: false
+    enabled: true
+
+  - name: RAR Archive (v5)
+    category: Archives
+    extension: rar
+    header: "52 61 72 21 1A 07 01 00"
+    max_size_mb: 2000
+    validate: false
+    enabled: true
+
+  - name: GZIP Archive
+    category: Archives
+    extension: gz
+    header: "1F 8B 08"
+    footer: "00 00 00 00"
+    max_size_mb: 2000
+    validate: false
+    enabled: true
+
+  - name: ISO 9660 Disk Image
+    category: Archives
+    extension: iso
+    header: "43 44 30 30 31"
+    header_offset: 32769
+    max_size_mb: 8000
+    validate: false
+    enabled: true
+
+  - name: VMDK Virtual Disk
+    category: Archives
+    extension: vmdk
+    header: "4B 44 4D 56"
+    max_size_mb: 32000
+    validate: false
+    enabled: false   # disabled by default — very large
+
+  # ---------------------------------------------------------------------------
+  # EXECUTABLES & CODE
+  # ---------------------------------------------------------------------------
+  - name: Windows PE Executable (exe/dll)
+    category: Executables
+    extension: exe
+    header: "4D 5A"
+    max_size_mb: 500
+    validate: false
+    enabled: true
+
+  - name: Linux ELF Binary
+    category: Executables
+    extension: elf
+    header: "7F 45 4C 46"
+    max_size_mb: 500
+    validate: false
+    enabled: true
+
+  - name: macOS Mach-O Binary (64-bit)
+    category: Executables
+    extension: macho
+    header: "CF FA ED FE"
+    max_size_mb: 500
+    validate: false
+    enabled: true
+
+  - name: macOS Mach-O Binary (32-bit)
+    category: Executables
+    extension: macho
+    header: "CE FA ED FE"
+    max_size_mb: 500
+    validate: false
+    enabled: true
+
+  - name: Java Class File
+    category: Executables
+    extension: class
+    header: "CA FE BA BE"
+    max_size_mb: 10
+    validate: false
+    enabled: true
+
+  # ---------------------------------------------------------------------------
+  # MEDIA — VIDEO
+  # ---------------------------------------------------------------------------
+  - name: MP4 / MOV Video
+    category: Media
+    extension: mp4
+    header: "00 00 00 ?? 66 74 79 70"
+    max_size_mb: 5000
+    validate: false
+    enabled: true
+
+  - name: AVI Video
+    category: Media
+    extension: avi
+    header: "52 49 46 46 ?? ?? ?? ?? 41 56 49 20"
+    max_size_mb: 5000
+    validate: false
+    enabled: true
+
+  - name: MPEG Video
+    category: Media
+    extension: mpg
+    header: "00 00 01 BA"
+    footer: "00 00 01 B9"
+    max_size_mb: 5000
+    validate: false
+    enabled: true
+
+  - name: Windows Media Video (WMV)
+    category: Media
+    extension: wmv
+    header: "30 26 B2 75 8E 66 CF 11"
+    max_size_mb: 5000
+    validate: false
+    enabled: true
+
+  - name: MKV / WebM Video
+    category: Media
+    extension: mkv
+    header: "1A 45 DF A3"
+    max_size_mb: 5000
+    validate: false
+    enabled: true
+
+  # ---------------------------------------------------------------------------
+  # MEDIA — AUDIO
+  # ---------------------------------------------------------------------------
+  - name: MP3 Audio
+    category: Media
+    extension: mp3
+    header: "FF FB"
+    max_size_mb: 100
+    validate: false
+    enabled: true
+
+  - name: WAV Audio
+    category: Media
+    extension: wav
+    header: "52 49 46 46 ?? ?? ?? ?? 57 41 56 45"
+    max_size_mb: 500
+    validate: false
+    enabled: true
+
+  - name: FLAC Audio
+    category: Media
+    extension: flac
+    header: "66 4C 61 43"
+    max_size_mb: 500
+    validate: false
+    enabled: true
+
+  # ---------------------------------------------------------------------------
+  # EMAIL
+  # ---------------------------------------------------------------------------
+  - name: Outlook PST
+    category: Email
+    extension: pst
+    header: "21 42 44 4E"
+    max_size_mb: 50000
+    validate: false
+    enabled: true
+
+  - name: mbox Email Archive
+    category: Email
+    extension: mbox
+    header: "46 72 6F 6D 20"
+    max_size_mb: 5000
+    validate: false
+    enabled: true
+
+  - name: Apple Mail (emlx)
+    category: Email
+    extension: emlx
+    header: "31 0A 58 2D 41 70 70 6C 65"
+    max_size_mb: 50
+    validate: false
+    enabled: true
+
+  # ---------------------------------------------------------------------------
+  # NETWORK CAPTURES
+  # ---------------------------------------------------------------------------
+  - name: PCAP Network Capture
+    category: Network
+    extension: pcap
+    header: "D4 C3 B2 A1"
+    max_size_mb: 2000
+    validate: false
+    enabled: true
+
+  - name: PCAPng Network Capture
+    category: Network
+    extension: pcapng
+    header: "0A 0D 0D 0A"
+    max_size_mb: 2000
+    validate: false
+    enabled: true
+
+  # ---------------------------------------------------------------------------
+  # MOBILE FORENSICS
+  # ---------------------------------------------------------------------------
+  - name: Android APK (ZIP-based)
+    category: Mobile
+    extension: apk
+    header: "50 4B 03 04"
+    max_size_mb: 500
+    validate: false
+    enabled: false   # disabled — same as ZIP; enable if targeting APKs specifically
+
+  # ---------------------------------------------------------------------------
+  # CRYPTOGRAPHY & KEYS
+  # ---------------------------------------------------------------------------
+  - name: PGP Public Key Block
+    category: Crypto
+    extension: asc
+    header: "2D 2D 2D 2D 2D 42 45 47 49 4E 20 50 47 50 20 50 55 42 4C 49 43"
+    max_size_mb: 1
+    validate: false
+    enabled: true
+
+  - name: PGP Private Key Block
+    category: Crypto
+    extension: key
+    header: "2D 2D 2D 2D 2D 42 45 47 49 4E 20 50 47 50 20 50 52 49 56 41 54 45"
+    max_size_mb: 1
+    validate: false
+    enabled: true
+
+  # ---------------------------------------------------------------------------
+  # MISC FORENSIC ARTIFACTS
+  # ---------------------------------------------------------------------------
+  - name: Firefox/Chrome SQLite History
+    category: Databases
+    extension: sqlite
+    header: "53 51 4C 69 74 65 20 66 6F 72 6D 61 74 20 33 00"
+    max_size_mb: 500
+    validate: true
+    enabled: false   # Same as SQLite — deduplicated by main SQLite entry above
+
+  - name: Microsoft Outlook NK2 Autocomplete
+    category: Windows Artifacts
+    extension: nk2
+    header: "0D F0 AD BA"
+    max_size_mb: 10
+    validate: false
+    enabled: true
