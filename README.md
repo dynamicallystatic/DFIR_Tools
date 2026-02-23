@@ -21,7 +21,7 @@ LinkedIn: [Bryan Ambrose](https://www.linkedin.com/in/bryan-a-2a30ab140)
 
 ## Tools
 
-### [dfir_sqlite_dumper.py](https://github.com/dynamicallystatic/DFIR_Tools/blob/main/dfir_sqlite_dumper.py)
+### [dfir_sqlite_dumper.py](https://github.com/dynamicallystatic/DFIR_Tools/blob/main/dfir_sqlite_dumper/dfir_sqlite_dumper.py)
 
 **Category:** SQLite Forensics
 
@@ -47,7 +47,7 @@ python3 dfir_sqlite_dumper.py History
 
 ---
 
-### [dfir_linux_collector.sh](https://github.com/dynamicallystatic/DFIR_Tools/blob/main/dfir_linux_collector.sh)
+### [dfir_linux_collector.sh](https://github.com/dynamicallystatic/DFIR_Tools/blob/main/dfir_linux_collector/dfir_linux_collector.sh)
 
 **Category:** Linux Forensics
 
@@ -91,7 +91,7 @@ sudo bash dfir_linux_collector.sh --full -o /mnt/external/case001
 
 ---
 
-### [dfir_windows_registry_reporter.exe](https://github.com/dynamicallystatic/DFIR_Tools/blob/main/dfir_windows_registry_reporter.exe)
+### [dfir_windows_registry_reporter.exe](https://github.com/dynamicallystatic/DFIR_Tools/blob/main/dfir_windows_registry_reporter/dfir_windows_registry_reporter.exe)
 
 **Category:** Windows Forensics
 
